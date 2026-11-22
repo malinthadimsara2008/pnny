@@ -1,0 +1,721 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>malinthadimsara</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f7;--panel:#fff;--ink:#14171f;--mute:#6b7280;--line:#e4e6eb;--accent:#2f5bff;--live:#e5303c;--sh:0 1px 2px rgba(20,23,31,.06),0 8px 24px rgba(20,23,31,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1015;--panel:#171a21;--ink:#f1f3f7;--mute:#8b93a3;--line:#262a33;--accent:#6c8bff;--live:#ff5460;--sh:none}}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 "Segoe UI",system-ui,sans-serif}
+.hide{display:none!important}
+/* floating layer: a page element lives here and is only MOVED VISUALLY between Preview and Live, so it is never reloaded (login, scroll, typed text all stay) */
+#fly{position:fixed;left:0;top:0;width:0;height:0;z-index:60;pointer-events:none}
+#fly>iframe{position:absolute;border:0;background:#000;border-radius:10px;pointer-events:auto;visibility:hidden}
+/* start */
+#start{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+.box{background:var(--panel);border-radius:18px;box-shadow:var(--sh);padding:32px;width:380px;max-width:100%}
+.box h1{margin:0 0 4px;font-size:24px}.box p{margin:0 0 22px;color:var(--mute)}
+input,select,button{font:inherit;color:var(--ink)}
+input,select{width:100%;padding:11px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg)}
+.btn{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+.btn.sec{background:var(--bg);color:var(--ink)}
+.or{text-align:center;color:var(--mute);font-size:13px;margin:16px 0 4px}
+/* admin */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
+h1.t{font-size:18px;margin:0}
+.badge{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:13px}
+.badge b{color:var(--ink);font-size:15px;letter-spacing:.08em;user-select:all}
+.dot{width:9px;height:9px;border-radius:50%;background:#aaa}.dot.on{background:#22c55e}
+main{display:grid;grid-template-columns:1fr 320px;gap:20px;padding:20px 24px;max-width:1280px;margin:auto}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--panel);border-radius:14px;box-shadow:var(--sh);padding:16px}
+h2{font-size:14px;margin:0 0 12px;color:var(--mute);font-weight:600}
+.prog{margin:0 auto;position:relative;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+.prog>*,#stage>*{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain;background:#000}
+.prog>.tag{position:absolute;inset:auto;top:10px;left:10px;width:auto;height:auto;pointer-events:none;z-index:5;background:var(--live);color:#fff;font-size:12px;font-weight:650;padding:3px 10px;border-radius:99px}
+.card.big{position:fixed;inset:0;z-index:50;border-radius:0;overflow:auto;padding:16px 24px;margin:0!important}
+.prog.mirroring>.tag{display:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:16px}
+.scene{border-radius:10px;overflow:hidden;background:var(--panel);cursor:pointer;outline:2px solid transparent;transition:outline-color .15s;box-shadow:var(--sh)}
+.scene:hover{outline-color:var(--accent)}.scene.live{outline-color:var(--live)}
+.thumb{aspect-ratio:16/9;background:#111;position:relative;overflow:hidden;pointer-events:none}
+.thumb iframe{width:1280px;height:720px;border:0;transform:scale(.14);transform-origin:0 0;position:absolute}
+.thumb img,.thumb video{width:100%;height:100%;object-fit:cover}
+.thumb .tx{color:#fff;font-size:12px;padding:8px}
+.meta{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;font-size:13px;gap:6px}
+.meta b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.x{background:none;border:0;color:var(--mute);cursor:pointer;font-size:16px}.x:hover{color:var(--live)}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
+.hint{font-size:12px;color:var(--mute);margin-top:6px}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:18px;text-align:center;color:var(--mute);cursor:pointer}
+.drop.over{border-color:var(--accent);color:var(--accent)}
+#err{color:var(--live);font-size:13px;margin-top:8px;min-height:16px}
+/* viewer */
+#viewer{position:fixed;inset:0;background:#000;overflow:hidden}
+#stage{position:absolute;inset:0;overflow:hidden;background:#000}
+#stage iframe{pointer-events:none!important}
+.txt{display:flex;align-items:center;justify-content:center;color:#fff;font:600 6vw system-ui,sans-serif;text-align:center;padding:5vw}
+/* Linotype Didot Pro Bold: uses the font if installed on this PC, or a file named LinotypeDidotPro-Bold.woff2 placed next to this page */
+@font-face{font-family:"DidotPro";font-weight:700;src:local("Linotype Didot Pro Bold"),local("LinotypeDidotPro-Bold"),local("Linotype Didot Bold"),url("LinotypeDidotPro-Bold.woff2") format("woff2")}
+/* idle screen (shown when output is stopped): cinematic deep-space title */
+.idle{display:flex!important;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 50%,#150f0a 0%,#06070c 55%,#010103 100%)!important;transition:opacity .5s;z-index:2;container-type:size;overflow:hidden}
+.idle .neb{position:absolute;border-radius:50%;filter:blur(14px);animation:idleDrift 32s ease-in-out infinite alternate}
+.idle .n1{width:80cqw;height:80cqh;left:-15%;top:-25%;background:radial-gradient(closest-side,rgba(255,140,50,.17),transparent)}
+.idle .n2{width:75cqw;height:75cqh;right:-15%;bottom:-25%;background:radial-gradient(closest-side,rgba(70,115,210,.17),transparent);animation-delay:-14s}
+.idle .stars{position:absolute;left:50%;top:50%;width:0;height:0}
+.idle .stars span{position:absolute;left:0;top:0;width:2.5px;height:2px;border-radius:2px;background:#fff;opacity:0;animation:idleFly var(--d) linear infinite;animation-delay:var(--dl)}
+.idle .flare{position:absolute;left:0;right:0;top:50%;height:0;animation:idleFlare 6s ease-in-out infinite alternate}
+.idle .flare::after{content:"";position:absolute;left:50%;top:50%;width:46cqw;height:16cqh;transform:translate(-50%,-50%);background:radial-gradient(ellipse,rgba(255,170,90,.28),transparent 70%)}
+.idle .iw{position:relative;z-index:2;text-align:center}
+.idle h1{margin:0;font:700 3.5vw/1.1 "DidotPro","Linotype Didot Pro","Didot","Bodoni Moda","Playfair Display",Georgia,serif;font-size:5.4cqw;letter-spacing:.06em;white-space:nowrap}
+.idle .l{display:inline-block;opacity:0;color:#fff;animation:idleRise 6s ease-in-out infinite,idleGlow 3s ease-in-out infinite alternate}
+.idle .vig{position:absolute;inset:0;z-index:3;background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.7) 100%)}
+.idle .bar{position:absolute;left:0;right:0;height:9cqh;background:#000;z-index:4}
+.idle .bar.t{top:0}.idle .bar.b{bottom:0}
+.idle .grain{position:absolute;inset:-50%;z-index:5;opacity:.07;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");animation:idleGrain .6s steps(4) infinite}
+@keyframes idleDrift{from{transform:translate(0,0) scale(1)}to{transform:translate(6cqw,3cqh) scale(1.15)}}
+@keyframes idleFly{0%{opacity:0;transform:rotate(var(--a)) translateX(var(--r)) scaleX(1)}12%{opacity:var(--o)}100%{opacity:0;transform:rotate(var(--a)) translateX(calc(var(--r) + 75cqw)) scaleX(10)}}
+@keyframes idleFlare{from{opacity:.5;transform:scaleX(.8)}to{opacity:1;transform:scaleX(1)}}
+@keyframes idleGrain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(3%,3%)}}
+@keyframes idleRise{0%{opacity:0;transform:translateY(.45em)}15%,75%{opacity:1;transform:none}90%,100%{opacity:0;transform:translateY(-.3em)}}
+@keyframes idleGlow{from{text-shadow:0 0 8px rgba(255,170,80,.15)}to{text-shadow:0 0 30px rgba(255,170,80,.85)}}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:1100px){.pair{grid-template-columns:1fr}}
+.pair .card .btn{padding:10px;margin-top:8px}
+.pvbar{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.pvbar select{flex:1 1 100%}.pvbar input{flex:1 1 150px;width:auto}
+.pvbar .go{width:auto;margin:0!important;padding:10px 16px!important}
+.chk{display:flex;align-items:flex-start;gap:8px;color:var(--ink);font-size:13px;margin:12px 0 0;cursor:pointer}
+.chk input{width:auto;margin-top:2px;accent-color:var(--accent)}
+.pvph{display:flex;align-items:center;justify-content:center;color:#8b93a3;font-size:13.5px;text-align:center;padding:24px;line-height:1.5}
+.pvcard.air{outline:2px solid var(--live)}
+.stbar{display:none;align-items:center;justify-content:space-between;gap:12px;height:44px;padding:0 14px;background:var(--panel);font-size:13px;flex:none}
+.stbar b{color:var(--live)}.stbar .btn{width:auto;margin:0!important;padding:7px 14px!important;background:var(--live)}
+.pvcard.stage{position:fixed;inset:0;z-index:50;border-radius:0;margin:0!important;padding:0;display:flex;flex-direction:column;background:#000;box-shadow:none;outline:0;overflow:hidden}
+.pvcard.stage>:not(.stbar):not(#pv){display:none!important}
+.pvcard.stage .stbar{display:flex}
+.pvcard.stage #pv{margin:auto;flex:none;border-radius:0}
+</style></head><body>
+
+<div id="start"><div class="box">
+ <h1>malinthadimsara</h1><p>Switch scenes on one PC, show them on another.</p>
+ <input type="password" id="apw" placeholder="Admin password">
+ <button class="btn" id="goAdmin">Open as admin</button>
+ <div class="or">or show a screen</div>
+ <input id="code" placeholder="Room code from admin" maxlength="8" style="text-transform:uppercase;text-align:center;letter-spacing:.12em">
+ <input type="password" id="upw" placeholder="User password" style="margin-top:10px">
+ <button class="btn sec" id="goView">Open as viewer</button>
+ <div id="serr" style="color:var(--live);font-size:13px;margin-top:12px;min-height:16px"></div>
+</div></div>
+
+<div id="admin" class="hide">
+ <header><h1 class="t">malinthadimsara</h1>
+  <div class="badge"><span class="dot" id="dot"></span><span id="status">Starting</span> · Room code <b id="room"></b> · <span id="vcount">0 viewers</span>
+   <button class="btn sec" id="openPrev" style="width:auto;margin:0 0 0 8px;padding:7px 12px">Open preview window</button>
+   <button class="btn sec" id="copyCode" style="width:auto;margin:0;padding:7px 12px">Copy code</button></div></header>
+ <main>
+  <section>
+   <div class="pair">
+   <div class="card" id="liveCard"><h2>Live output</h2><div class="prog" id="prog"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap"><span style="font-size:13px;color:var(--mute)">Screen size</span>
+     <select id="sz" style="width:auto;padding:7px 10px"><option value="16:9">16:9 (widescreen)</option><option value="16:10">16:10</option><option value="4:3">4:3</option><option value="21:9">21:9 (ultrawide)</option><option value="3:2">3:2</option><option value="1:1">1:1 (square)</option><option value="9:16">9:16 (vertical)</option><option value="custom">Custom…</option></select>
+     <span id="szc" class="hide" style="display:flex;gap:6px;align-items:center"><input id="szw" type="number" min="1" max="10000" value="16" style="width:84px;padding:7px 8px"> : <input id="szh" type="number" min="1" max="10000" value="9" style="width:84px;padding:7px 8px"></span></div>
+    <div class="hint">You can click, scroll, type and play/pause videos right inside this Live output. For a website that needs login, press “Send exact copy”: the screens then show a live picture of this panel, so nobody sees the login page.</div>
+    <button class="btn" id="mirror">Send exact copy of this panel to the screens</button>
+    <button class="btn sec" id="big">Enlarge for sharper quality</button>
+    <button class="btn sec hide" id="recap">Change the shared window</button>
+    <button class="btn sec" id="reload">Refresh output now</button>
+    <button class="btn sec" id="clear">Stop output</button></div>
+   <div class="card pvcard" id="pvCard"><div class="stbar"><span><b>ON SCREEN</b> · the screens see only the picture below, in full size. This bar is not shown to them.</span><button class="btn" id="pvOff">Take off screen</button></div>
+    <h2>Preview · private, not on screen</h2>
+    <div class="prog" id="pv"><div class="pvph">Choose a scene below, or type the website you want to log into.<br>Nothing here reaches the screens until you press Put on screen.</div></div>
+    <div class="pvbar"><select id="pvSel"></select>
+     <input id="pvUrl" placeholder="or type a website link, e.g. https://mysite.com/login">
+     <button class="btn sec go" id="pvGo">Open</button></div>
+    <label class="chk hide" id="pvSafeRow"><input type="checkbox" id="pvSafe" checked><span>This site needs a login: hide it. The screens get a live video of this preview instead of loading the site themselves.</span></label>
+    <div class="hint" id="pvHint" style="margin-top:10px"></div>
+    <button class="btn sec hide" id="pvRecap">Pick the window to share again</button>
+    <button class="btn hide" id="pvLive">Put on screen</button>
+    <button class="btn sec" id="pvClose">Clear preview</button></div>
+   </div>
+   <div class="grid" id="grid"></div>
+  </section>
+  <aside class="card">
+   <h2>Add scene</h2>
+   <div class="drop" id="drop">Drop an HTML, image or video file here<br>or click to upload</div>
+   <input type="file" id="file" accept=".html,.htm,image/*,video/*" multiple class="hide">
+   <label>Or add from</label>
+   <select id="type"><option value="url">Website link</option><option value="html">Pasted HTML code</option><option value="image">Image link</option><option value="video">Video link</option><option value="text">Text</option><option value="capture">Shared window / tab (for sites that need login)</option></select>
+   <label>Name</label><input id="name" placeholder="Scene name">
+   <label id="vlab">Content</label><input id="value" placeholder="https://">
+   <div id="rwrap"><label>Auto-refresh website (seconds, 0 = off)</label><input id="refresh" type="number" min="0" value="0"></div>
+   <button class="btn" id="add">Add scene</button>
+   <div class="hint">Website scenes reload by themselves so your edits appear. Uploaded HTML files are a snapshot: re-upload after changing them. Uploaded HTML files always display. Website links only work if the site allows embedding.</div>
+   <div id="err"></div>
+  </aside>
+ </main>
+</div>
+
+<div id="viewer" class="hide"><div id="stage"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const PFX='ss-',ADMIN_PW='admin',USER_PW='user';
+const fly=document.createElement('div');fly.id='fly';document.body.append(fly);
+let flyOn=false;
+function flyTick(){
+ const els=[...fly.children];
+ if(!els.length){flyOn=false;return;}
+ const air=pvOnAir();
+ els.forEach(el=>{
+  const box=el._box,role=el.dataset.role;
+  let ok=!!(box&&box.isConnected),r=null;
+  if(ok){r=box.getBoundingClientRect();if(r.width<2||r.height<2)ok=false;}
+  if(role==='live'&&(air||el.style.zIndex!=='1'))ok=false;   /* another scene is live, or the preview is on air */
+  if(role==='pv'&&bigMode)ok=false;                           /* enlarged live card covers the preview */
+  if(!ok){el.style.visibility='hidden';return;}
+  el.style.visibility='visible';
+  el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.width=r.width+'px';el.style.height=r.height+'px';
+  el.style.borderRadius=(role==='pv'&&air)?'0':'10px';
+ });
+ requestAnimationFrame(flyTick);
+}
+function flyPut(el,box,role){el._box=box;el.dataset.role=role;fly.append(el);if(!flyOn){flyOn=true;requestAnimationFrame(flyTick);}}
+function raf2(fn){let d=0;const g=()=>{if(!d){d=1;fn();}};requestAnimationFrame(()=>requestAnimationFrame(g));setTimeout(g,150);}
+function bust(u){try{const x=new URL(u,location.href);x.searchParams.set('_ss',Date.now());return x.href;}catch(e){return u;}}
+function softReload(box,pool,s){ /* reload only when auto-refresh is on */
+ const o=pool.get(s.id);if(!o)return;
+ const old=o.el,el=build(s);el.style.opacity=0;el.style.zIndex=old.style.zIndex;box.append(el);
+ let done=false;const fin=()=>{if(done)return;done=true;el.style.opacity=1;o.el=el;setTimeout(()=>old.remove(),120);};
+ el.onload=fin;setTimeout(fin,8000);
+}
+/* Keeps each scene loaded once and only shows/hides it, so switching scenes never reloads the page (logins survive). */
+function mount(box,pool,scenes,liveId,opts){
+ opts=opts||{};
+ const ids=new Set(scenes.map(x=>x.id));
+ pool.forEach((o,id)=>{if(!ids.has(id)){o.el.remove();pool.delete(id);}});
+ scenes.forEach(sc=>{
+  const key=sc.type+'|'+sc.value.length+'|'+(sc.rev||0);
+  let o=pool.get(sc.id);
+  if(o&&o.key!==key){o.el.remove();pool.delete(sc.id);o=null;}
+  if(!o&&sc.id===liveId){const el=build(sc);el.style.opacity=0;el.style.transition='opacity .35s';box.append(el);const o2={el,key,fresh:true,sid:sc.id+'|'+(sc.rev||0),last:0,q:[],ready:false};pool.set(sc.id,o2);hookEntry(o2,opts);}
+ });
+ pool.forEach((o,id)=>{const on=id===liveId;o.el.style.zIndex=on?1:0;o.el.style.pointerEvents=on?'auto':'none';
+  if(o.fresh){o.fresh=false;raf2(()=>o.el.style.opacity=o.el.style.zIndex==1?1:0);}else o.el.style.opacity=on?1:0;});
+}
+function build(s,thumb){let el;
+ if(s.type==='capture'){
+  if(thumb){el=document.createElement('div');el.className='tx';el.textContent='\u{1F5A5} Shared window';}
+  else{el=document.createElement('video');el._cap=true;el.autoplay=true;el.playsInline=true;
+   el.muted=!(IS_VIEWER&&navigator.userActivation&&navigator.userActivation.hasBeenActive);
+   const ms=capSrc(s.id);if(ms)el.srcObject=ms;}
+ }
+ else if(thumb&&s.type==='url'){el=document.createElement('div');el.className='tx';let h=s.value;try{h=new URL(s.value).hostname;}catch(e){}el.textContent='\u{1F310} '+h;}
+ else if(s.type==='html'){el=document.createElement('iframe');el.srcdoc=thumb?s.value:inject(s.value);}
+ else if(s.type==='url'){el=document.createElement('iframe');el.src=bust(s.value);el.allow='autoplay;fullscreen';}
+ else if(s.type==='image'){el=document.createElement('img');el.src=s.value;}
+ else if(s.type==='video'){el=document.createElement('video');el.src=s.value;el.muted=true;el.loop=true;el.playsInline=true;el.autoplay=!thumb;}
+ else{el=document.createElement('div');el.className=thumb?'tx':'txt';el.textContent=s.value;}
+ return el;}
+
+/* ---- shared window / tab: the admin shares a browser window (already logged in) and viewers only see its video ---- */
+let mirrorStream=null,bigMode=false,vMirror=false;
+const capStreams=new Map();let IS_VIEWER=false,vStream=null,vLiveCap=false;
+function capSrc(id){return IS_VIEWER?vStream:capStreams.get(id);}
+function stopCap(id){const m=capStreams.get(id);if(m){m.getTracks().forEach(t=>t.stop());capStreams.delete(id);}}
+async function pickCapture(sc){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){$('err').textContent='This browser cannot share a window. Use Chrome or Edge.';return false;}
+ try{
+  const ms=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:true});
+  const old=capStreams.get(sc.id);if(old)old.getTracks().forEach(t=>t.stop());
+  capStreams.set(sc.id,ms);sc.rev=(sc.rev||0)+1;
+  ms.getVideoTracks()[0].addEventListener('ended',()=>{
+   if(capStreams.get(sc.id)!==ms)return;
+   capStreams.delete(sc.id);$('err').textContent='Window sharing stopped. Pick the window again.';
+   conns.forEach(c=>sendState(c));render();
+  });
+  $('err').textContent='';return true;
+ }catch(e){return false;}
+}
+async function startMirror(src){
+ src=src||'prog';
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia||!window.CropTarget){$('err').textContent='This needs a recent Chrome or Edge on the admin PC.';return false;}
+ let ms=null;
+ try{
+  ms=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30,width:{ideal:3840},height:{ideal:2160}},audio:true,preferCurrentTab:true,selfBrowserSurface:'include'});
+  const tr=ms.getVideoTracks()[0];try{tr.contentHint='detail';}catch(e){}
+  if(src==='pv'){const pv0={a:mirrorStream,b:st.mirror,c:st.mirrorEl};st.mirror=true;st.mirrorEl='pv';mirrorStream=ms;pvUi();await new Promise(r=>setTimeout(r,250));mirrorStream=pv0.a;st.mirror=pv0.b;st.mirrorEl=pv0.c;}
+  const ct=await CropTarget.fromElement($(src));
+  await tr.cropTo(ct);
+  tr.addEventListener('ended',()=>{if(mirrorStream===ms)stopMirror();});
+  if(mirrorStream&&mirrorStream!==ms)mirrorStream.getTracks().forEach(t=>t.stop());
+  mirrorStream=ms;st.mirror=true;st.mirrorEl=src;$('err').textContent='';push();return true;
+ }catch(e){
+  if(ms)ms.getTracks().forEach(t=>t.stop());
+  pvUi();syncSize();
+  $('err').textContent='Could not start. When asked, choose \u201cThis tab\u201d.';return false;
+ }
+}
+function dropMirror(){
+ if(mirrorStream)mirrorStream.getTracks().forEach(t=>t.stop());
+ mirrorStream=null;st.mirror=false;st.mirrorEl=null;
+}
+function stopMirror(){dropMirror();push();}
+function pvOnAir(){return !!(st.mirror&&st.mirrorEl==='pv'&&mirrorStream);}
+function bwUp(sdp){try{return sdp.replace(/(m=video[^\r\n]*\r\n(?:i=[^\r\n]*\r\n)?c=[^\r\n]*\r\n)/,'$1b=AS:20000\r\n');}catch(e){return sdp;}}
+function boost(call){ /* ask the browser for sharp, high-bitrate video instead of its small default */
+ const go=async()=>{try{for(const sn of call.peerConnection.getSenders()){if(!sn.track||sn.track.kind!=='video')continue;
+  try{sn.track.contentHint='detail';}catch(e){}
+  const p=sn.getParameters();if(!p.encodings||!p.encodings.length)p.encodings=[{}];
+  p.encodings[0].maxBitrate=20e6;p.encodings[0].scaleResolutionDownBy=1;p.degradationPreference='maintain-resolution';await sn.setParameters(p);}}catch(e){}};
+ [400,1500,4000].forEach(t=>setTimeout(go,t));
+}
+function callSync(c,s){
+ const ms=st.mirror?mirrorStream:(s&&s.type==='capture'?capStreams.get(s.id):null);
+ if(ms&&peer){
+  if(c.callTag!==ms.id){if(c.call)try{c.call.close();}catch(e){}c.callTag=ms.id;try{c.call=peer.call(c.peer,ms,{sdpTransform:bwUp});boost(c.call);}catch(e){}}
+ }else if(c.call){try{c.call.close();}catch(e){}c.call=null;c.callTag=null;}
+}
+function onStream(ms){
+ vStream=ms;vPool.forEach(o=>{if(o.el._cap){o.el.srcObject=ms;const r=o.el.play();if(r&&r.catch)r.catch(()=>{});}});
+
+ if(vMirror||vLiveCap)setIdle($('stage'),false);
+ updateMV();
+}
+function updateMV(){
+ let mv=$('mvid');
+ if(!mv){mv=document.createElement('video');mv.id='mvid';mv.autoplay=true;mv.playsInline=true;mv.style.zIndex=10;mv.style.display='none';$('stage').append(mv);}
+ const on=vMirror&&vStream&&vStream.active;
+ if(on&&mv.srcObject!==vStream){mv.muted=!(navigator.userActivation&&navigator.userActivation.hasBeenActive);mv.srcObject=vStream;const r=mv.play();if(r&&r.catch)r.catch(()=>{});}
+ mv.style.display=on?'block':'none';
+}
+/* ---- remote control: interactions inside HTML scenes / videos are recorded and replayed on the other screens ---- */
+function SSB(){
+ if(window.__ssb||window.parent===window)return;window.__ssb=1;
+ var P=window.parent,mute=0,lastUser=0,pend={},tmr=null;
+ function path(n){var a=[];while(n&&n!==document.documentElement){var p=n.parentNode;if(!p)return null;a.unshift(Array.prototype.indexOf.call(p.childNodes,n));n=p;}return n?a:null;}
+ function find(a){var n=document.documentElement;for(var i=0;i<a.length&&n;i++)n=n.childNodes[a[i]];return n;}
+ function send(e){try{P.postMessage({ss:1,e:e},'*');}catch(x){}}
+ function skipClick(t){return t&&t.nodeType===1&&(t.tagName==='SELECT'||t.tagName==='OPTION'||(t.tagName==='INPUT'&&/^(checkbox|radio)$/i.test(t.type)));}
+ ['pointerdown','keydown','touchstart'].forEach(function(t){document.addEventListener(t,function(){lastUser=Date.now();},true);});
+ document.addEventListener('click',function(ev){
+  if(!ev.isTrusted||skipClick(ev.target))return;
+  var p=path(ev.target);if(!p)return;
+  send({k:'click',p:p,x:ev.clientX/innerWidth,y:ev.clientY/innerHeight});
+ },true);
+ ['keydown','keyup'].forEach(function(t){document.addEventListener(t,function(ev){
+  if(!ev.isTrusted)return;
+  send({k:'key',t:t,key:ev.key,code:ev.code,sh:ev.shiftKey,ct:ev.ctrlKey,al:ev.altKey,me:ev.metaKey,rp:ev.repeat});
+ },true);});
+ ['input','change'].forEach(function(t){document.addEventListener(t,function(ev){
+  if(!ev.isTrusted)return;
+  var el=ev.target,p=path(el);if(!p)return;
+  if(el.isContentEditable&&!/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)){if(t==='input')send({k:'ce',p:p,h:el.innerHTML});return;}
+  var e={k:t,p:p,v:el.value,c:el.checked};
+  if(el.tagName==='SELECT'&&el.multiple)e.m=[].map.call(el.options,function(o){return o.selected;});
+  send(e);
+ },true);});
+ function flush(){tmr=null;for(var k in pend){var o=pend[k],el=o.el,mx=el.scrollWidth-el.clientWidth,my=el.scrollHeight-el.clientHeight;
+  send({k:'scroll',p:o.p,fx:mx>0?el.scrollLeft/mx:0,fy:my>0?el.scrollTop/my:0});}pend={};}
+ document.addEventListener('scroll',function(ev){
+  if(Date.now()<mute)return;
+  var t=ev.target,isDoc=(t===document),el=isDoc?(document.scrollingElement||document.documentElement):t,p=isDoc?null:path(t);
+  if(!isDoc&&!p)return;
+  pend[JSON.stringify(p)]={p:p,el:el};if(!tmr)tmr=setTimeout(flush,60);
+ },true);
+ ['play','pause','seeked'].forEach(function(t){document.addEventListener(t,function(ev){
+  var el=ev.target;if(Date.now()<mute||Date.now()-lastUser>1500)return;
+  if(!el||!el.tagName||!/^(VIDEO|AUDIO)$/.test(el.tagName))return;
+  var p=path(el);if(!p)return;
+  send({k:'media',p:p,op:t,t:el.currentTime,pl:!el.paused});
+ },true);});
+ function replay(e){
+  var t,el;
+  if(e.k==='click'){
+   t=find(e.p);if(!t||t.nodeType!==1)return;
+   var o={bubbles:true,cancelable:true,view:window,clientX:e.x*innerWidth,clientY:e.y*innerHeight,button:0},PE=window.PointerEvent||MouseEvent;
+   t.dispatchEvent(new PE('pointerdown',o));t.dispatchEvent(new MouseEvent('mousedown',o));
+   if(t.focus&&(t.tabIndex>=0||/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(t.tagName)))try{t.focus({preventScroll:true});}catch(x){}
+   t.dispatchEvent(new PE('pointerup',o));t.dispatchEvent(new MouseEvent('mouseup',o));t.dispatchEvent(new MouseEvent('click',o));
+  }else if(e.k==='key'){
+   t=document.activeElement;if(!t||t.tagName==='IFRAME')t=document.body;
+   t.dispatchEvent(new KeyboardEvent(e.t,{key:e.key,code:e.code,shiftKey:e.sh,ctrlKey:e.ct,altKey:e.al,metaKey:e.me,repeat:e.rp,bubbles:true,cancelable:true}));
+  }else if(e.k==='input'||e.k==='change'){
+   el=find(e.p);if(!el||el.nodeType!==1)return;
+   if(el.tagName==='SELECT'&&e.m){[].forEach.call(el.options,function(op,i){op.selected=!!e.m[i];});}
+   else if(el.type==='checkbox'||el.type==='radio')el.checked=!!e.c;
+   else if(el.value!==e.v){try{el.value=e.v;}catch(x){}}
+   el.dispatchEvent(new Event(e.k,{bubbles:true}));
+  }else if(e.k==='ce'){
+   el=find(e.p);if(!el||el.nodeType!==1)return;el.innerHTML=e.h;el.dispatchEvent(new Event('input',{bubbles:true}));
+  }else if(e.k==='scroll'){
+   el=e.p?find(e.p):(document.scrollingElement||document.documentElement);if(!el||el.nodeType!==1)return;
+   mute=Date.now()+250;
+   el.scrollTop=e.fy*(el.scrollHeight-el.clientHeight);el.scrollLeft=e.fx*(el.scrollWidth-el.clientWidth);
+  }else if(e.k==='media'){
+   el=find(e.p);if(!el||!el.play)return;mute=Date.now()+500;
+   try{el.currentTime=e.t;}catch(x){}
+   if(e.pl){var r=el.play();if(r&&r.catch)r.catch(function(){});}else el.pause();
+  }
+ }
+ window.addEventListener('message',function(m){
+  if(m.source!==P)return;var d=m.data;if(d&&d.ssCmd){try{replay(d.ssCmd);}catch(x){}}
+ });
+}
+const BRIDGE='<scr'+'ipt>('+SSB.toString()+')();</scr'+'ipt>';
+function inject(h){
+ const m=/<head(\s[^>]*)?>/i.exec(h)||/<html(\s[^>]*)?>/i.exec(h);
+ if(m){const i=m.index+m[0].length;return h.slice(0,i)+BRIDGE+h.slice(i);}
+ const d=/^\s*<!doctype[^>]*>/i.exec(h);
+ if(d)return h.slice(0,d[0].length)+BRIDGE+h.slice(d[0].length);
+ return BRIDGE+h;
+}
+function wireMedia(el,emit){
+ el.controls=true;
+ ['pointerdown','keydown','touchstart'].forEach(t=>el.addEventListener(t,()=>{el._u=Date.now();},true));
+ ['play','pause','seeked'].forEach(op=>el.addEventListener(op,()=>{
+  if(Date.now()<(el._mute||0)||Date.now()-(el._u||0)>1500)return;
+  emit({k:'media',op,t:el.currentTime,pl:!el.paused});
+ }));
+}
+function applyEvt(o,e){
+ const el=o.el;
+ if(el.tagName==='IFRAME'){try{el.contentWindow.postMessage({ssCmd:e},'*');}catch(x){}}
+ else if(el.tagName==='VIDEO'&&e.k==='media'){
+  el._mute=Date.now()+600;try{el.currentTime=e.t;}catch(x){}
+  if(e.pl){const r=el.play();if(r&&r.catch)r.catch(()=>{});}else el.pause();
+ }
+}
+function deliver(o,evs){for(const e of evs){if(e.seq<=o.last)continue;o.last=e.seq;if(o.ready)applyEvt(o,e);else o.q.push(e);}}
+function flushQ(o){o.ready=true;const q=o.q;o.q=[];q.forEach(e=>applyEvt(o,e));}
+function hookEntry(o,opts){
+ const el=o.el;
+ if(el._cap)o.ready=true;
+ else if(el.tagName==='IFRAME')el.addEventListener('load',()=>setTimeout(()=>flushQ(o),300));
+ else if(el.tagName==='VIDEO')el.addEventListener('loadedmetadata',()=>flushQ(o),{once:true});
+ else o.ready=true;
+ if(opts.emit&&el.tagName==='VIDEO'&&!el._cap)wireMedia(el,e=>{if(el.style.zIndex==1)opts.emit(o,e);});
+ const sd=opts.seed&&opts.seed(o.sid);if(sd&&sd.length)deliver(o,sd);
+}
+const IDLE_TEXT='Vidyabhimani\u201926';
+function setIdle(box,on){
+ let el=box.querySelector(':scope>.idle');
+ if(on){
+  if(el&&!el.dataset.off)return;
+  if(el)el.remove();
+  el=document.createElement('div');el.className='idle';el.style.opacity=0;
+  const mk=(cls)=>{const d=document.createElement('div');d.className=cls;return d;};
+  const sky=mk('stars');
+  for(let k=0;k<160;k++){const st=document.createElement('span');
+   st.style.cssText='--a:'+(Math.random()*360).toFixed(1)+'deg;--r:'+(3+Math.random()*18).toFixed(1)+'cqw;--d:'+(7+Math.random()*8).toFixed(1)+'s;--dl:-'+(Math.random()*14).toFixed(1)+'s;--o:'+(.4+Math.random()*.55).toFixed(2)+(Math.random()<.18?';background:#ffd9a8':'');
+   sky.append(st);}
+  const w=mk('iw');
+  const h=document.createElement('h1');
+  [...IDLE_TEXT].forEach((c,i)=>{const sp=document.createElement('span');sp.className='l';sp.textContent=c;sp.style.animationDelay=(i*0.07)+'s,'+(1.8+i*0.07)+'s';h.append(sp);});
+  w.append(h);
+  el.append(mk('neb n1'),mk('neb n2'),sky,mk('flare'),w,mk('vig'),mk('bar t'),mk('bar b'),mk('grain'));box.append(el);
+  raf2(()=>el.style.opacity=1);
+ }else if(el&&!el.dataset.off){el.dataset.off='1';el.style.opacity=0;setTimeout(()=>el.remove(),600);}
+}
+function show(m){$('start').classList.add('hide');$(m).classList.remove('hide');}
+function newCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=a[Math.floor(Math.random()*a.length)];return c;}
+
+/* ---------- ADMIN ---------- */
+let st={scenes:[],liveId:null},conns=new Set(),peer,bc=null;
+const CH=60000;
+/* What the SCREENS (vMix) load. For a website scene whose page told us its room code (the quiz admin does), the screens get the same page as an audience viewer: ?room=CODE, no ?role=admin. That is what makes edits made in the admin appear on the vMix screen. */
+function viewVal(s){
+ if(s.type==='url'&&s.room){try{const u=new URL(s.value);u.searchParams.delete('role');u.searchParams.set('room',s.room);return u.href;}catch(e){}}
+ return s.value;
+}
+function slim(){return{scenes:st.scenes.map(s=>({id:s.id,name:s.name,type:s.type,refresh:s.refresh,rev:s.rev||0,len:viewVal(s).length})),liveId:st.liveId,size:getSize(),mirror:!!st.mirror};}
+function sendState(c){
+ if(!c||!c.open)return;
+ try{
+  c.send({meta:slim()});
+  const s=st.scenes.find(x=>x.id===st.liveId);callSync(c,s);if(!s)return;
+  const vv=viewVal(s),tag=s.id+'|'+vv.length+'|'+(s.rev||0)+'|'+(s.room||'');
+  if(c.sentTag!==tag){c.sentTag=tag;
+   const v=vv,n=Math.max(1,Math.ceil(v.length/CH));
+   for(let i=0;i<n;i++)c.send({chunk:{tag,id:s.id,len:v.length,i,n,part:v.slice(i*CH,(i+1)*CH)}});}
+  const sid=s.id+'|'+(s.rev||0),l=logs.get(sid);
+  if(l&&l.ev.length&&c.sentLog!==sid){c.sentLog=sid;c.send({log:{sid,ev:l.ev}});}
+ }catch(e){console.error('send failed',e);}
+}
+const logs=new Map(); /* sid -> {ev:[],n:0}: everything done inside a scene, in order */
+function logAdd(sid,e){
+ let l=logs.get(sid);if(!l){l={ev:[],n:0};logs.set(sid,l);}
+ e.seq=++l.n;
+ const ck=(e.k==='scroll'||e.k==='input'||e.k==='change'||e.k==='ce'||e.k==='media')?e.k+'|'+JSON.stringify(e.p||''):null;
+ if(ck)l.ev=l.ev.filter(x=>x.ck!==ck);
+ e.ck=ck;l.ev.push(e);if(l.ev.length>3000)l.ev.shift();
+ return e;
+}
+function liveEmit(sid,e){
+ const x=logAdd(sid,e),msg={evt:{sid,e:x}};
+ conns.forEach(c=>{if(c.open){try{c.send(msg);}catch(_){}}});
+ try{bc&&bc.postMessage(msg);}catch(_){}
+}
+let bcLogSid=null;
+function bcSync(reset){
+ if(!bc)return;if(reset)bcLogSid=null;
+ try{
+  bc.postMessage(Object.assign({},st,{scenes:st.scenes.map(s=>Object.assign({},s,{value:viewVal(s)}))}));
+  const s=st.scenes.find(x=>x.id===st.liveId);if(!s)return;
+  const sid=s.id+'|'+(s.rev||0),l=logs.get(sid);
+  if(l&&l.ev.length&&bcLogSid!==sid){bcLogSid=sid;bc.postMessage({log:{sid,ev:l.ev}});}
+ }catch(e){}
+}
+function setRoom(s,code){
+ code=String(code||'').toUpperCase();if(!/^[A-Z0-9]{4,12}$/.test(code)||s.room===code)return;
+ s.room=code;if(st.scenes.includes(s))push();else pvUi();
+}
+addEventListener('message',ev=>{
+ const d=ev.data;
+ if(d&&d.ehRoom){ /* the quiz admin page announces its room code */
+  if(pvEl&&pvScene&&pvEl.contentWindow===ev.source){setRoom(pvScene,d.ehRoom);return;}
+  for(const [id,o] of admPool){if(o.el.contentWindow===ev.source){const s=st.scenes.find(x=>x.id===id);if(s)setRoom(s,d.ehRoom);return;}}
+  return;
+ }
+ if(!d||!d.ss||!d.e)return;
+ const lo=st.liveId&&admPool.get(st.liveId);
+ if(lo&&lo.el.contentWindow===ev.source&&lo.el.style.zIndex==1){liveEmit(lo.sid,d.e);return;}
+ const pf=$('pv').querySelector('iframe');
+ if(pf&&pf.contentWindow===ev.source)logAdd('pv',d.e);
+});
+function startAdmin(){
+ if($('apw').value!==ADMIN_PW){$('serr').textContent='Wrong admin password.';return;}
+ show('admin');
+ try{st=JSON.parse(localStorage.getItem('ss_state'))||st;}catch(e){}
+ st.mirror=false;st.mirrorEl=null;st.scenes.forEach(x=>x.rev=(x.rev||0)+1); /* fresh start so every screen begins in the same state */
+ let code=localStorage.getItem('ss_code');if(!code){code=newCode();try{localStorage.setItem('ss_code',code);}catch(e){}}
+ $('room').textContent=code;render();
+ try{bc=new BroadcastChannel('ss_'+code);bc.onmessage=e=>{if(e.data&&e.data.hello)bcSync(true);};}catch(e){}
+ peer=new Peer(PFX+code);
+ peer.on('open',()=>{$('dot').className='dot on';$('status').textContent='Online';});
+ peer.on('error',e=>{$('dot').className='dot';$('status').textContent=e.type==='unavailable-id'?'This room is open in another window':'Connection problem, retrying';});
+ peer.on('disconnected',()=>{$('dot').className='dot';$('status').textContent='Reconnecting';setTimeout(()=>peer.reconnect(),2000);});
+ peer.on('connection',c=>{c.on('data',d=>{if(d&&d.pw===USER_PW){conns.add(c);c.sentTag=null;count();sendState(c);}else c.close();});c.on('close',()=>{conns.delete(c);count();});});
+}
+function count(){const n=conns.size;$('vcount').textContent=n+(n===1?' viewer':' viewers');}
+function push(){
+ try{localStorage.setItem('ss_state',JSON.stringify(st));$('err').textContent='';}catch(e){$('err').textContent='Scenes updated, but too large to save in this browser after closing.';}
+ conns.forEach(c=>sendState(c));bcSync();render();
+}
+let admT=null,admPool=new Map();
+function armAdmin(){clearInterval(admT);const s=st.scenes.find(x=>x.id===st.liveId);
+ if(s&&s.type==='url'&&s.refresh>0)admT=setInterval(()=>softReload($('prog'),admPool,s),Math.max(1,s.refresh)*1000);}
+function render(){
+ syncSize();
+ const live=st.scenes.find(s=>s.id===st.liveId),p=$('prog'),pvMir=pvOnAir();p.querySelectorAll('.tag').forEach(x=>x.remove());
+ if(pvMir){const t=document.createElement('span');t.className='tag';t.textContent='LIVE (from preview): '+(pvScene?pvScene.name:'');p.append(t);}
+ else if(live){const t=document.createElement('span');t.className='tag';t.textContent='LIVE: '+live.name;p.append(t);}
+ mount(p,admPool,st.scenes,st.liveId,{emit:(o,e)=>liveEmit(o.sid,e),seed:sid=>{const l=logs.get(sid);return l?l.ev.slice():null;}});setIdle(p,pvMir?false:(!live||(live.type==='capture'&&!capStreams.get(live.id))));
+ {let lm=p.querySelector(':scope>#lmv');
+  if(pvMir){if(!lm){lm=document.createElement('video');lm.id='lmv';lm.muted=true;lm.autoplay=true;lm.playsInline=true;lm.style.zIndex=3;p.append(lm);}
+   if(lm.srcObject!==mirrorStream){lm.srcObject=mirrorStream;const r=lm.play();if(r&&r.catch)r.catch(()=>{});}}
+  else if(lm)lm.remove();}
+ $('recap').classList.toggle('hide',!(live&&live.type==='capture'));
+ $('mirror').textContent=st.mirror?'Stop sending exact copy':'Send exact copy of this panel to the screens';p.classList.toggle('mirroring',!!st.mirror&&!pvMir);
+ const g=$('grid');g.innerHTML='';
+ if(!st.scenes.length)g.innerHTML='<div class="hint">No scenes yet. Upload your first file on the right.</div>';
+ st.scenes.forEach(s=>{
+  const d=document.createElement('div');d.className='scene'+(s.id===st.liveId?' live':'');
+  const th=document.createElement('div');th.className='thumb';th.append(build(s,true));
+  const m=document.createElement('div');m.className='meta';m.innerHTML='<b></b><span style="display:flex;gap:2px;flex:none"><button class="x" data-a="pv" title="Preview here only (not on screen)">👁</button><button class="x" data-a="del" title="Delete">✕</button></span>';
+  m.firstChild.textContent=s.name;
+  m.querySelector('[data-a=pv]').onclick=e=>{e.stopPropagation();if(s.type==='capture'&&!capStreams.get(s.id)){pickCapture(s).then(ok=>{if(ok)openPv(s.id);});return;}openPv(s.id);};
+  m.querySelector('[data-a=del]').onclick=e=>{e.stopPropagation();if(confirm('Delete "'+s.name+'"?')){stopCap(s.id);st.scenes=st.scenes.filter(x=>x!==s);if(st.liveId===s.id)st.liveId=null;push();}};
+  d.onclick=()=>{if(s.type==='capture'&&!capStreams.get(s.id)){pickCapture(s).then(ok=>{if(ok){st.liveId=s.id;push();}});return;}st.liveId=s.id;push();};d.append(th,m);g.append(d);});
+ {const sl=$('pvSel');sl.innerHTML='<option value="">Choose a scene to preview\u2026</option>';
+  st.scenes.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sl.append(o);});}
+ if(pvScene&&!pvScene.tmp&&!st.scenes.find(x=>x.id===pvScene.id)){pvScene=null;clearPvBox();}
+ pvUi();
+ armAdmin();
+}
+const PRESETS=['16:9','16:10','4:3','21:9','3:2','1:1','9:16'];
+let customOpen=false;
+function getSize(){const z=st.size;return z&&z.w>0&&z.h>0?z:{w:16,h:9};}
+function sizeBox(el,z){el.style.aspectRatio=z.w+'/'+z.h;
+ if(el.id==='pv'&&pvOnAir()){el.style.width='min(100vw,calc('+(z.w/z.h).toFixed(4)+' * (100vh - 44px)))';return;}el.style.width=(bigMode&&el.id==='prog')?'min(100%,calc('+(z.w/z.h).toFixed(4)+' * (100vh - 330px)))':'min(100%,'+(70*z.w/z.h).toFixed(2)+'vh)';}
+function syncSize(){
+ const z=getSize(),key=z.w+':'+z.h,sel=$('sz');
+ sel.value=(customOpen||!PRESETS.includes(key))?'custom':key;
+ $('szc').classList.toggle('hide',sel.value!=='custom');
+ if(document.activeElement!==$('szw'))$('szw').value=z.w;
+ if(document.activeElement!==$('szh'))$('szh').value=z.h;
+ sizeBox($('prog'),z);sizeBox($('pv'),z);
+}
+$('sz').onchange=()=>{
+ const v=$('sz').value;
+ if(v==='custom'){customOpen=true;$('szc').classList.remove('hide');return;}
+ customOpen=false;const[a,b]=v.split(':').map(Number);st.size={w:a,h:b};push();
+};
+function customSize(){
+ const w=Math.min(10000,parseInt($('szw').value)||0),h=Math.min(10000,parseInt($('szh').value)||0);
+ if(w>0&&h>0){st.size={w,h};push();}
+}
+$('szw').onchange=customSize;$('szh').onchange=customSize;
+let pvScene=null,pvEl=null;
+function clearPvBox(){const box=$('pv');[...box.children].forEach(c=>{if(!c.classList.contains('pvph'))c.remove();});fly.querySelectorAll('[data-role=pv]').forEach(x=>x.remove());pvEl=null;}
+function setPv(sc){
+ if(pvOnAir())dropMirror(); /* never leave a different page on screen by accident */
+ pvScene=sc;logs.delete('pv');clearPvBox();
+ if(sc){const el=build(sc);if(el.tagName==='VIDEO'&&!el._cap)wireMedia(el,e=>logAdd('pv',e));if(el.tagName==='IFRAME'){flyPut(el,$('pv'),'pv');pvEl=el;}else $('pv').append(el);}
+ $('pv').querySelector('.pvph').classList.toggle('hide',!!sc);
+ if(sc&&sc.tmp)$('pvUrl').value=sc.value;
+ $('pvSafe').checked=true; /* a login can only reach the screens as video */
+ pvUi();push();
+}
+function openPv(id){const sc=st.scenes.find(x=>x.id===id);if(sc){setPv(sc);$('pvCard').scrollIntoView({behavior:'smooth',block:'nearest'});}}
+function clearPv(){setPv(null);}
+function pvUi(){
+ const on=pvOnAir(),sc=pvScene,box=$('pv');
+ let t=box.querySelector(':scope>.tag');
+ if(sc&&!on){if(!t){t=document.createElement('span');t.className='tag';box.append(t);}
+  t.style.background='var(--accent)';t.textContent='PREVIEW: '+sc.name;}
+ else if(t)t.remove();
+ $('pvCard').classList.toggle('stage',on);syncSize();
+ $('pvLive').classList.toggle('hide',on||!sc);
+ $('pvRecap').classList.toggle('hide',!(sc&&sc.type==='capture'));
+ $('pvSafeRow').classList.add('hide');
+ $('pvSel').value=sc&&!sc.tmp?sc.id:'';
+ $('pvLive').textContent='Put on screen'+(sc&&(sc.type==='url'||sc.type==='html')?' (your login is kept)':'');$('pvLive').style.background='';
+ $('pvHint').textContent=on
+  ?''
+  :(sc&&sc.type==='capture'
+   ?'Only you can see this. Open the website in another browser window, log in there, then press Put on screen. The screen will only show that window\u2019s video, never your login.'
+   :'Only you can see this. Log in here, then press Put on screen. If this stays blank, the site does not allow embedding: add a \u201cShared window\u201d scene instead.');
+}
+function loadPvUrl(){
+ let u=$('pvUrl').value.trim();if(!u)return;
+ if(!/^https?:\/\//i.test(u))u='https://'+u;
+ let h;try{h=new URL(u).hostname;}catch(e){$('err').textContent='That link does not look right.';return;}
+ $('err').textContent='';setPv({id:null,name:h,type:'url',value:u,refresh:0,rev:0,tmp:true});
+}
+function addScene(name,type,value,refresh){st.scenes.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,5),name:name||'Scene '+(st.scenes.length+1),type,value,refresh:type==='url'?(refresh||0):0,rev:0});}
+function handleFiles(files){
+ [...files].forEach(f=>{
+  const isHtml=/\.html?$/i.test(f.name),r=new FileReader(),name=f.name.replace(/\.[^.]+$/,'');
+  r.onload=()=>{
+   addScene(name,isHtml?'html':f.type.startsWith('video')?'video':'image',r.result);push();};
+  isHtml?r.readAsText(f):r.readAsDataURL(f);});
+}
+$('openPrev').onclick=()=>{
+ const base=location.href.split('#')[0];
+ window.open(base+'#v='+$('room').textContent+'&p='+USER_PW,'ss_preview','width=960,height=540');
+};
+$('copyCode').onclick=()=>{
+ const c=$('room').textContent,b=$('copyCode');
+ (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).catch(()=>{}).finally(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy code',1500);});
+};
+$('goAdmin').onclick=startAdmin;
+$('drop').onclick=()=>$('file').click();
+$('file').onchange=e=>{handleFiles(e.target.files);e.target.value='';};
+['dragover','dragenter'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('over');}));
+['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('over');}));
+$('drop').addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
+$('type').onchange=()=>{$('rwrap').classList.toggle('hide',$('type').value!=='url');const cp=$('type').value==='capture';$('value').classList.toggle('hide',cp);$('vlab').classList.toggle('hide',cp);$('value').placeholder={url:'https://',html:'<h1>Hello</h1>',image:'https://',video:'https://',text:'Text to display'}[$('type').value];};
+$('add').onclick=()=>{if($('type').value==='capture'){addScene($('name').value.trim()||'Shared window','capture','capture',0);$('name').value='';push();return;}const v=$('value').value.trim();if(!v){$('err').textContent='Enter the scene content first.';return;}
+ addScene($('name').value.trim(),$('type').value,v,Math.max(0,parseInt($('refresh').value)||0));$('name').value='';$('value').value='';push();};
+$('reload').onclick=()=>{const s=st.scenes.find(x=>x.id===st.liveId);if(s){s.rev=(s.rev||0)+1;push();}};
+$('pvLive').onclick=async()=>{
+ let sc=pvScene;if(!sc)return;
+ const safe=false; /* no screen sharing: just move the logged-in page to Live */ /* screens get a video of the preview, login stays hidden */
+ if(sc.tmp){const rm=sc.room;addScene(sc.name,'url',sc.value,0);sc=st.scenes[st.scenes.length-1];if(rm)sc.room=rm;}
+ if(sc.type==='capture'&&!capStreams.get(sc.id)){pickCapture(sc).then(ok=>{if(ok){dropMirror();st.liveId=sc.id;clearPv();}});return;}
+ const pl=logs.get('pv');
+ const adopt=!!(pvEl&&pvEl.isConnected&&pvEl.tagName==='IFRAME'&&(sc.type==='url'||sc.type==='html'));
+ if(adopt||(pl&&pl.ev.length)){ /* carry what you did in the preview over to the screen */
+  sc.rev=(sc.rev||0)+1;
+  logs.set(sc.id+'|'+sc.rev,{ev:pl?pl.ev.map(x=>Object.assign({},x)):[],n:pl?pl.n:0});
+ }
+ if(adopt){ /* the Live panel takes over the very same page you were logged in on: no reload, nothing lost */
+  const old=admPool.get(sc.id);if(old){old.el.remove();admPool.delete(sc.id);}
+  const el=pvEl;pvEl=null;
+  el.dataset.role='live';el._box=$('prog');el.style.zIndex=1;el.style.opacity=1;el.style.pointerEvents='auto';
+  admPool.set(sc.id,{el,key:sc.type+'|'+sc.value.length+'|'+(sc.rev||0),fresh:false,sid:sc.id+'|'+(sc.rev||0),last:0,q:[],ready:true});
+ }
+ dropMirror();st.liveId=sc.id;pvScene=null;clearPvBox();$('pv').querySelector('.pvph').classList.remove('hide');push();
+ /* FIX: the screens/preview window load a website fresh (logged out). Send the admin's Live panel as video so they see exactly what you see. Skipped when the page reports a room code (audience URL is used instead). */
+ if(sc.type==='url'&&!sc.room)setTimeout(()=>startMirror('prog'),100);
+
+};
+$('pvOff').onclick=()=>stopMirror();
+$('pvSafe').onchange=pvUi;
+$('pvClose').onclick=clearPv;
+$('pvSel').onchange=()=>{const v=$('pvSel').value;if(v)openPv(v);else clearPv();};
+$('pvGo').onclick=loadPvUrl;
+$('pvUrl').addEventListener('keydown',e=>{if(e.key==='Enter')loadPvUrl();});
+$('pvRecap').onclick=()=>{const sc=pvScene;if(sc)pickCapture(sc).then(ok=>{if(ok)setPv(sc);});};
+$('mirror').onclick=()=>{if(st.mirror)stopMirror();else startMirror('prog');};
+$('big').onclick=()=>{if(pvOnAir()){$('err').textContent='Take the preview off screen first, then enlarge.';return;}bigMode=!bigMode;$('liveCard').classList.toggle('big',bigMode);$('big').textContent=bigMode?'Shrink':'Enlarge for sharper quality';syncSize();};
+$('recap').onclick=()=>{const sc=st.scenes.find(x=>x.id===st.liveId);if(sc&&sc.type==='capture')pickCapture(sc).then(ok=>{if(ok)push();});};
+$('clear').onclick=()=>{st.liveId=null;push();};
+
+/* ---------- VIEWER ---------- */
+let vcur=null,vT=null,vPool=new Map(),vmeta=null,vals=new Map(),vbuf={};
+const vlogs=new Map();
+function vlogMerge(sid,ev){
+ let a=vlogs.get(sid);if(!a){a=[];vlogs.set(sid,a);}
+ if(ev.length===1&&(!a.length||ev[0].seq>a[a.length-1].seq))a.push(ev[0]);
+ else{const m=new Map();a.concat(ev).forEach(x=>m.set(x.seq,x));a=[...m.values()].sort((x,y)=>x.seq-y.seq);vlogs.set(sid,a);}
+ while(a.length>3000)a.shift();
+}
+function vEntry(sid){for(const o of vPool.values())if(o.sid===sid)return o;return null;}
+function vApply(){
+ if(!vmeta)return;
+ const scenes=vmeta.scenes.map(m=>{const c=vals.get(m.id);return Object.assign({},m,{value:c&&c.len===m.len?c.value:''});});
+ const live=scenes.find(x=>x.id===vmeta.liveId);
+ if(live&&!live.value&&live.len)return; /* live scene still downloading */
+ apply({scenes,liveId:vmeta.liveId,size:vmeta.size,mirror:vmeta.mirror});
+}
+function onData(d){
+ if(!d)return;
+ if(d.meta){vmeta=d.meta;vApply();}
+ else if(d.chunk){const k=d.chunk,b=vbuf[k.tag]||(vbuf[k.tag]={parts:[],got:0});
+  if(!b.parts[k.i]){b.parts[k.i]=k.part;b.got++;}
+  if(b.got===k.n){vals.set(k.id,{len:k.len,value:b.parts.join('')});delete vbuf[k.tag];vApply();}}
+ else if(d.log){vlogMerge(d.log.sid,d.log.ev);const o=vEntry(d.log.sid);if(o)deliver(o,d.log.ev);}
+ else if(d.evt){vlogMerge(d.evt.sid,[d.evt.e]);const o=vEntry(d.evt.sid);if(o)deliver(o,[d.evt.e]);}
+ else if(d.scenes)apply(d);
+}
+let vsize={w:16,h:9};
+function fitStage(){
+ const g=$('stage'),r=vsize.w/vsize.h,W=innerWidth,H=innerHeight;let w=W,h=W/r;if(h>H){h=H;w=H*r;}
+ g.style.inset='auto';g.style.left=(W-w)/2+'px';g.style.top=(H-h)/2+'px';g.style.width=w+'px';g.style.height=h+'px';
+}
+addEventListener('resize',fitStage);
+function apply(s){
+ const sc=s.scenes.find(x=>x.id===s.liveId),
+  key=(sc?sc.id+'|'+sc.type+'|'+sc.value.length+'|'+(sc.rev||0)+'|'+(sc.refresh||0):'')+'#'+s.scenes.map(x=>x.id).join(',')+'@'+(s.size?s.size.w+'x'+s.size.h:'')+'~'+(s.mirror?1:0);
+ if(key===vcur)return;vcur=key;clearInterval(vT);
+ if(s.size&&s.size.w>0&&s.size.h>0)vsize=s.size;fitStage();
+ vMirror=!!s.mirror;vLiveCap=!!(sc&&sc.type==='capture');
+ mount($('stage'),vPool,s.scenes,vMirror?null:s.liveId,{seed:sid=>vlogs.get(sid)});
+ setIdle($('stage'),vMirror?!(vStream&&vStream.active):(!sc||(vLiveCap&&!(vStream&&vStream.active))));
+ updateMV();
+ if(!vMirror&&sc&&sc.type==='url'&&sc.refresh>0)vT=setInterval(()=>softReload($('stage'),vPool,sc),Math.max(1,sc.refresh)*1000);
+}
+function startViewer(){
+ const code=$('code').value.trim().toUpperCase();if(!code){$('code').focus();return;}
+ if($('upw').value!==USER_PW){$('serr').textContent='Wrong user password.';return;}
+ try{localStorage.setItem('ss_vcode',code);}catch(e){}
+ IS_VIEWER=true;show('viewer');document.title='Live';fitStage();setIdle($('stage'),true);
+ let peer,conn,dialAt=0;
+ const connect=()=>{
+  if(conn&&(conn.open||Date.now()-dialAt<8000))return;
+  if(!peer||peer.destroyed||peer.disconnected){try{peer&&peer.destroy();}catch(e){}peer=new Peer();peer.on('open',dial);peer.on('error',()=>{});peer.on('call',call=>{call.answer();call.on('stream',onStream);});return;}
+  dial();
+ };
+ const dial=()=>{dialAt=Date.now();conn=peer.connect(PFX+code,{reliable:true});conn.on('open',()=>conn.send({pw:$('upw').value}));conn.on('data',onData);conn.on('close',()=>{conn=null;});};
+ connect();setInterval(connect,3000);
+ try{const bc2=new BroadcastChannel('ss_'+code);bc2.onmessage=e=>{const d=e.data;if(!d)return;if(d.scenes)apply(d);else if(d.log||d.evt)onData(d);};bc2.postMessage({hello:1});}catch(e){}
+ document.addEventListener('dblclick',()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen());
+}
+$('goView').onclick=startViewer;
+$('code').addEventListener('keydown',e=>{if(e.key==='Enter')startViewer();});
+const sv=localStorage.getItem('ss_vcode');if(sv)$('code').value=sv;
+if(location.hash.startsWith('#v=')){const q=new URLSearchParams(location.hash.slice(1));$('code').value=q.get('v')||'';$('upw').value=q.get('p')||'';startViewer();}
+</script></body></html>
